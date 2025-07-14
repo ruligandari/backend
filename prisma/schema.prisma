@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model absensi {
+  id               Int            @id @default(autoincrement()) @db.UnsignedInt
+  id_karyawan      Int            @db.UnsignedInt
+  id_kantor        Int            @db.UnsignedInt
+  tanggal          DateTime       @db.Date
+  jam_masuk        DateTime       @db.Time(0)
+  jam_keluar       DateTime?      @db.Time(0)
+  foto_masuk       String?        @db.VarChar(255)
+  foto_keluar      String?        @db.VarChar(255)
+  latitude_masuk   Decimal?       @db.Decimal(10, 8)
+  longitude_keluar Decimal?       @db.Decimal(11, 8)
+  latitude_keluar  Decimal?       @db.Decimal(10, 8)
+  longitude_masuk  Decimal?       @db.Decimal(11, 8)
+  status           absensi_status @default(hadir)
+  potongan         String         @db.VarChar(255)
+  keterangan       String?        @db.Text
+  kantor           kantor         @relation(fields: [id_kantor], references: [id], onDelete: Cascade, map: "absensi_id_kantor_foreign")
+  karyawan         karyawan       @relation(fields: [id_karyawan], references: [id], onDelete: Cascade, map: "absensi_id_karyawan_foreign")
+
+  @@index([id_kantor], map: "absensi_id_kantor_foreign")
+  @@index([id_karyawan], map: "absensi_id_karyawan_foreign")
+}
+
+model admin {
+  id         Int        @id @default(autoincrement()) @db.UnsignedInt
+  username   String     @unique @db.VarChar(100)
+  password   String     @db.VarChar(255)
+  email      String     @db.VarChar(100)
+  role       admin_role @default(admin)
+  created_at DateTime?  @db.DateTime(0)
+  updated_at DateTime?  @db.DateTime(0)
+}
+
+model cuti {
+  id              Int         @id @default(autoincrement()) @db.UnsignedInt
+  id_karyawan     Int         @db.UnsignedInt
+  tanggal_mulai   DateTime    @db.Date
+  tanggal_selesai DateTime    @db.Date
+  keterangan      String      @db.Text
+  status          cuti_status @default(diajukan)
+  created_at      DateTime?   @db.DateTime(0)
+  updated_at      DateTime?   @db.DateTime(0)
+  karyawan        karyawan    @relation(fields: [id_karyawan], references: [id], onDelete: Cascade, map: "cuti_id_karyawan_foreign")
+
+  @@index([id_karyawan], map: "cuti_id_karyawan_foreign")
+}
+
+model divisi {
+  id          Int              @id @default(autoincrement()) @db.UnsignedInt
+  nama_divisi String           @db.VarChar(100)
+  tipe_gaji   divisi_tipe_gaji
+  created_at  DateTime?        @db.DateTime(0)
+  updated_at  DateTime?        @db.DateTime(0)
+  karyawan    karyawan[]
+}
+
+model gaji_pokok {
+  id              Int       @id @default(autoincrement()) @db.UnsignedInt
+  id_karyawan     Int       @db.UnsignedInt
+  gaji_pokok      Int
+  tanggal_berlaku DateTime  @db.Date
+  created_at      DateTime? @db.DateTime(0)
+  updated_at      DateTime? @db.DateTime(0)
+}
+
+model hari_libur {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  tanggal    DateTime  @db.Date
+  keterangan String    @db.VarChar(255)
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model jadwal_kerja {
+  id         Int               @id @default(autoincrement()) @db.UnsignedInt
+  id_divisi  Int               @db.UnsignedInt
+  hari       jadwal_kerja_hari
+  jam_masuk  DateTime?         @db.Time(0)
+  jam_pulang DateTime?         @db.Time(0)
+  created_at DateTime?         @db.DateTime(0)
+  updated_at DateTime?         @db.DateTime(0)
+}
+
+model kantor {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  nama_kantor String    @db.VarChar(100)
+  alamat      String    @db.Text
+  no_telp     String    @db.VarChar(15)
+  latitude    Decimal   @db.Decimal(10, 8)
+  longitude   Decimal   @db.Decimal(11, 8)
+  radius      Int
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+  absensi     absensi[]
+}
+
+model karyawan {
+  id            Int                    @id @default(autoincrement()) @db.UnsignedInt
+  no_karyawan   String                 @db.VarChar(100)
+  nama          String                 @db.VarChar(100)
+  jenis_kelamin karyawan_jenis_kelamin
+  id_divisi     Int                    @db.UnsignedInt
+  alamat        String                 @db.Text
+  no_telp       String                 @db.VarChar(15)
+  no_rekening   String                 @db.VarChar(30)
+  foto          String?                @db.VarChar(255)
+  fitur_wajah   String?                @db.Text
+  id_device     String?                @db.VarChar(255)
+  created_at    DateTime?              @db.DateTime(0)
+  updated_at    DateTime?              @db.DateTime(0)
+  email         String                 @unique @db.VarChar(100)
+  password      String                 @db.VarChar(255)
+  absensi       absensi[]
+  cuti          cuti[]
+  divisi        divisi                 @relation(fields: [id_divisi], references: [id], onDelete: Cascade, map: "karyawan_id_divisi_foreign")
+  penggajian    penggajian[]
+
+  @@index([id_divisi], map: "karyawan_id_divisi_foreign")
+}
+
+model migrations {
+  id        BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  version   String @db.VarChar(255)
+  class     String @db.VarChar(255)
+  group     String @db.VarChar(255)
+  namespace String @db.VarChar(255)
+  time      Int
+  batch     Int    @db.UnsignedInt
+}
+
+model notifikasi {
+  id               Int      @id @default(autoincrement())
+  jenis_notifikasi String   @db.VarChar(255)
+  pesan            String   @db.VarChar(255)
+  waktu            DateTime @db.DateTime(0)
+  is_read          Boolean
+  id_karyawan      Int
+  link             String   @db.VarChar(255)
+}
+
+model penggajian {
+  id              Int       @id @default(autoincrement()) @db.UnsignedInt
+  id_karyawan     Int       @db.UnsignedInt
+  gaji_pokok      Int
+  bagi_hasil      Int
+  bulan           String    @db.VarChar(255)
+  tahun           Int
+  potongan        String    @db.VarChar(255)
+  total_kehadiran String    @db.VarChar(255)
+  sakit           String    @db.VarChar(255)
+  izin            String    @db.VarChar(255)
+  created_at      DateTime? @db.DateTime(0)
+  updated_at      DateTime? @db.DateTime(0)
+  karyawan        karyawan  @relation(fields: [id_karyawan], references: [id], onDelete: Cascade, map: "penggajian_id_karyawan_foreign")
+
+  @@index([id_karyawan], map: "penggajian_id_karyawan_foreign")
+}
+
+model wa_server {
+  id            Int    @id @default(autoincrement())
+  wa_server_url String @db.VarChar(255)
+  wa_secret     String @db.VarChar(255)
+  wa_sender     String @db.VarChar(255)
+  wa_group      String @db.VarChar(255)
+}
+
+enum divisi_tipe_gaji {
+  gaji_pokok
+  bagi_hasil
+}
+
+enum jadwal_kerja_hari {
+  senin
+  selasa
+  rabu
+  kamis
+  jumat
+  sabtu
+  minggu
+}
+
+enum karyawan_jenis_kelamin {
+  L
+  P
+}
+
+enum admin_role {
+  admin
+  superadmin
+}
+
+enum cuti_status {
+  diajukan
+  disetujui
+  ditolak
+}
+
+enum absensi_status {
+  hadir
+  izin
+  sakit
+  cuti
+  alpha
+  terlambat
+}
