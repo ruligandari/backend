@@ -1,22 +1,17 @@
-FROM node:20-alpine
+# Dockerfile
+FROM node:20
 
-# Set working directory
 WORKDIR /app
 
-# Salin dependency file saja
 COPY package*.json ./
+COPY prisma ./prisma/
 
-# Install dependencies menggunakan npm ci untuk clean install
-RUN npm ci --omit=dev
+RUN npm install
 
-# Salin semua source code
-COPY . .
-
-# Generate Prisma client
+# Generate Prisma client (ini penting!)
 RUN npx prisma generate
 
-# Expose port
-EXPOSE 3000
+COPY . .
 
-# Jalankan aplikasi
+EXPOSE 3000
 CMD ["node", "index.js"]
