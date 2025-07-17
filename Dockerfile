@@ -13,7 +13,7 @@ RUN npm ci --omit=dev
 COPY . .
 
 # Generate Prisma client (HARUS setelah file prisma/schema.prisma disalin)
-RUN npx prisma generate
+RUN npx prisma generate --log-level debug
 
 # Buka port
 EXPOSE 3000
