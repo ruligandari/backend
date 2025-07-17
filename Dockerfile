@@ -1,22 +1,16 @@
 FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Salin file package.json dan lockfile
-COPY package*.json ./
+# Salin semua file proyek SEKALIGUS
+COPY . .
 
 # Install dependencies
 RUN npm install
 
-# Salin semua file proyek (termasuk prisma/)
-COPY . .
-
-# Generate Prisma client (HARUS setelah file prisma/schema.prisma disalin)
+# Generate Prisma client setelah file prisma/ tersedia
 RUN npx prisma generate
 
-# Buka port
 EXPOSE 3000
 
-# Jalankan aplikasi
 CMD ["node", "index.js"]
