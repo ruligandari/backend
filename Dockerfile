@@ -7,13 +7,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --omit=dev
+RUN npm install
 
 # Salin semua file proyek (termasuk prisma/)
 COPY . .
 
 # Generate Prisma client (HARUS setelah file prisma/schema.prisma disalin)
-RUN npx prisma generate --log-level debug
+RUN npx prisma generate
 
 # Buka port
 EXPOSE 3000
