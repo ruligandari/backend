@@ -1,13 +1,22 @@
-FROM node:20
+FROM node:20-alpine
 
+# Set working directory
 WORKDIR /app
 
+# Salin dependency file saja
 COPY package*.json ./
 
-RUN npm install
+# Install dependencies menggunakan npm ci untuk clean install
+RUN npm ci --omit=dev
 
+# Salin semua source code
 COPY . .
 
+# Generate Prisma client
 RUN npx prisma generate
 
-CMD ["npm", "run", "start"]
+# Expose port
+EXPOSE 3000
+
+# Jalankan aplikasi
+CMD ["node", "src/index.js"]
